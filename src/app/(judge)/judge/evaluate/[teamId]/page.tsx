@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import EvaluationInterface from '@/components/judge/EvaluationInterface'
 import { redirect } from 'next/navigation'

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import TeamDashboard from '@/components/participant/TeamDashboard'
 import CreateOrJoinView from '@/components/participant/CreateOrJoinView'

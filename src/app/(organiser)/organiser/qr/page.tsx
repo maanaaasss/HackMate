@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import QRScannerPage from '@/components/organiser/QRScannerPage'
 import { redirect } from 'next/navigation'

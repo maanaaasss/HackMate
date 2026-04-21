@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import MentorDashboardView from '@/components/mentor/MentorDashboardView'
 import { redirect } from 'next/navigation'

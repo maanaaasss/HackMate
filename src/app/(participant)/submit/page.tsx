@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import SubmissionForm from '@/components/participant/SubmissionForm'
 import { redirect } from 'next/navigation'

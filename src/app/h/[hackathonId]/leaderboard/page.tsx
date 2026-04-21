@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardView from '@/components/shared/LeaderboardView'
 import { Metadata } from 'next'

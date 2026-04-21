@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import CommandCenterDashboard from '@/components/organiser/CommandCenterDashboard'
 import { redirect } from 'next/navigation'

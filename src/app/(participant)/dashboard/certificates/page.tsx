@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import CertificatesView from '@/components/participant/CertificatesView'
 import { redirect } from 'next/navigation'

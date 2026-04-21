@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import RubricBuilder from '@/components/organiser/RubricBuilder'
 import { redirect } from 'next/navigation'

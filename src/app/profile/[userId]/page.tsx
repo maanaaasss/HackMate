@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import TalentProfileView from '@/components/TalentProfileView'
 import { notFound } from 'next/navigation'
