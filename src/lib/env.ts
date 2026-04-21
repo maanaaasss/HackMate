@@ -1,75 +1,71 @@
-import { z } from 'zod'
-
 /**
- * Environment variable validation schema.
- * All server-side env vars are validated on startup.
- * Missing variables will crash the app with a clear error message.
+ * Environment variable validation.
+ * Validates at runtime, not at build time.
  */
 
-const envSchema = z.object({
-  // Supabase (required)
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url('NEXT_PUBLIC_SUPABASE_URL must be a valid URL'),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
-
-  // Upstash Redis (required)
-  UPSTASH_REDIS_URL: z.string().min(1, 'UPSTASH_REDIS_URL is required'),
-  UPSTASH_REDIS_TOKEN: z.string().min(1, 'UPSTASH_REDIS_TOKEN is required'),
-
-  // Cloudflare R2 (required)
-  CLOUDFLARE_R2_ACCOUNT_ID: z.string().min(1, 'CLOUDFLARE_R2_ACCOUNT_ID is required'),
-  CLOUDFLARE_R2_ACCESS_KEY_ID: z.string().min(1, 'CLOUDFLARE_R2_ACCESS_KEY_ID is required'),
-  CLOUDFLARE_R2_SECRET_ACCESS_KEY: z.string().min(1, 'CLOUDFLARE_R2_SECRET_ACCESS_KEY is required'),
-  CLOUDFLARE_R2_BUCKET_NAME: z.string().min(1, 'CLOUDFLARE_R2_BUCKET_NAME is required'),
-  NEXT_PUBLIC_R2_PUBLIC_URL: z.string().url('NEXT_PUBLIC_R2_PUBLIC_URL must be a valid URL'),
-
-  // GitHub API (required for GitHub integration)
-  GITHUB_TOKEN: z.string().min(1, 'GITHUB_TOKEN is required'),
-
-  // Email (optional - only needed for certificate emails)
-  RE_API_KEY: z.string().optional(),
-
-  // App
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL'),
-
-  // JWT (required for QR codes)
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
-
-  // Node environment
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-})
-
-// Type export for use in other files
-export type Env = z.infer<typeof envSchema>
-
-// Validate and export env object
-function validateEnv(): Env {
-  try {
-    return envSchema.parse(process.env)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const issues = error.issues
-      const missingVars = issues.map((i) => i.path.join('.')).join(', ')
-      const errorMessages = issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n')
-      
-      console.error('\n❌ ENVIRONMENT VALIDATION FAILED\n')
-      console.error('Missing or invalid environment variables:\n')
-      console.error(errorMessages)
-      console.error('\nPlease check your .env.local file and ensure all required variables are set.')
-      console.error('See .env.example for reference.\n')
-      
-      throw new Error(`Missing environment variables: ${missingVars}`)
-    }
-    throw error
-  }
+type Env = {
+  NEXT_PUBLIC_SUPABASE_URL: string
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: string
+  SUPABASE_SERVICE_ROLE_KEY: string
+  UPSTASH_REDIS_URL: string
+  UPSTASH_REDIS_TOKEN: string
+  CLOUDFLARE_R2_ACCOUNT_ID: string
+  CLOUDFLARE_R2_ACCESS_KEY_ID: string
+  CLOUDFLARE_R2_SECRET_ACCESS_KEY: string
+  CLOUDFLARE_R2_BUCKET_NAME: string
+  NEXT_PUBLIC_R2_PUBLIC_URL: string
+  GITHUB_TOKEN: string
+  RE_API_KEY?: string
+  NEXT_PUBLIC_APP_URL: string
+  JWT_SECRET: string
+  NODE_ENV: string
 }
 
-// Export validated env object
-// This will crash on import if validation fails
-export const env = validateEnv()
+const REQUIRED_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'UPSTASH_REDIS_URL',
+  'UPSTASH_REDIS_TOKEN',
+  'CLOUDFLARE_R2_ACCOUNT_ID',
+  'CLOUDFLARE_R2_ACCESS_KEY_ID',
+  'CLOUDFLARE_R2_SECRET_ACCESS_KEY',
+  'CLOUDFLARE_R2_BUCKET_NAME',
+  'NEXT_PUBLIC_R2_PUBLIC_URL',
+  'GITHUB_TOKEN',
+  'NEXT_PUBLIC_APP_URL',
+  'JWT_SECRET',
+]
 
-// Helper to check if we're in production
-export const isProduction = env.NODE_ENV === 'production'
+let validated = false
 
-// Helper to check if we're in development
-export const isDevelopment = env.NODE_ENV === 'development'
+function validateEnv(): void {
+  if (validated) return
+  
+  const missing = REQUIRED_VARS.filter((key) => !process.env[key])
+  
+  if (missing.length > 0) {
+    console.error('\n❌ ENVIRONMENT VALIDATION FAILED\n')
+    console.error('Missing environment variables:\n')
+    missing.forEach((key) => console.error(`  - ${key}`))
+    console.error('\nPlease check your .env.local file.\n')
+    
+    throw new Error(`Missing environment variables: ${missing.join(', ')}`)
+  }
+  
+  validated = true
+}
+
+// Lazy proxy that validates on first access
+export const env = new Proxy({} as Env, {
+  get(_target, prop: string) {
+    // Skip validation during build
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      validateEnv()
+    }
+    return process.env[prop]
+  },
+})
+
+export const isProduction = process.env.NODE_ENV === 'production'
+export const isDevelopment = process.env.NODE_ENV === 'development'
