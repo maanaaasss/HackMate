@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { env } from '@/lib/env'
+import { getRedis } from '@/lib/redis'
 import { Queue } from 'bullmq'
 
-// Lazy queue creation (avoids connection at build time)
+// Lazy queue creation (avoids connection at build time).
+// Uses the shared getRedis() from src/lib/redis so that UPSTASH_REDIS_TOKEN
+// stays within src/lib/ — required by the secret-leak policy.
 let _certificateQueue: Queue | null = null
 
 function getCertificateQueue(): Queue {
   if (!_certificateQueue) {
     _certificateQueue = new Queue('certificates', {
-      connection: {
-        host: env.UPSTASH_REDIS_URL.replace('https://', '').replace('http://', '').split(':')[0],
-        port: parseInt(env.UPSTASH_REDIS_URL.split(':')[2] || '6379'),
-        password: env.UPSTASH_REDIS_TOKEN,
-        tls: env.UPSTASH_REDIS_URL.startsWith('rediss://') ? {} : undefined,
-      },
+      connection: getRedis(),
     })
   }
   return _certificateQueue
