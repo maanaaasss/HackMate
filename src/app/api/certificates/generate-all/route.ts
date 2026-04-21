@@ -3,15 +3,22 @@ import { createClient } from '@/lib/supabase/server'
 import { env } from '@/lib/env'
 import { Queue } from 'bullmq'
 
-// Create BullMQ queue for certificate generation
-const certificateQueue = new Queue('certificates', {
-  connection: {
-    host: env.UPSTASH_REDIS_URL.replace('https://', '').replace('http://', '').split(':')[0],
-    port: parseInt(env.UPSTASH_REDIS_URL.split(':')[2] || '6379'),
-    password: env.UPSTASH_REDIS_TOKEN,
-    tls: env.UPSTASH_REDIS_URL.startsWith('rediss://') ? {} : undefined,
-  },
-})
+// Lazy queue creation (avoids connection at build time)
+let _certificateQueue: Queue | null = null
+
+function getCertificateQueue(): Queue {
+  if (!_certificateQueue) {
+    _certificateQueue = new Queue('certificates', {
+      connection: {
+        host: env.UPSTASH_REDIS_URL.replace('https://', '').replace('http://', '').split(':')[0],
+        port: parseInt(env.UPSTASH_REDIS_URL.split(':')[2] || '6379'),
+        password: env.UPSTASH_REDIS_TOKEN,
+        tls: env.UPSTASH_REDIS_URL.startsWith('rediss://') ? {} : undefined,
+      },
+    })
+  }
+  return _certificateQueue
+}
 
 // Batch size for Vercel Hobby (60s timeout)
 // On Pro (300s timeout), process all at once
@@ -196,7 +203,7 @@ export async function POST(request: NextRequest) {
           .eq('id', existingCert.id)
 
         // Queue job for regeneration
-        await certificateQueue.add('generate-certificate', {
+        await getCertificateQueue().add('generate-certificate', {
           certificate_id: existingCert.id,
           user_id: member.user_id,
           hackathon_id,
@@ -224,7 +231,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Queue job for generation
-        await certificateQueue.add('generate-certificate', {
+        await getCertificateQueue().add('generate-certificate', {
           certificate_id: newCert.id,
           user_id: member.user_id,
           hackathon_id,
