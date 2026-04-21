@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -30,6 +30,13 @@ jobs:
         run: npm run lint
 
       - name: Build
+        # Provide placeholder public env vars so Next.js static pre-rendering
+        # doesn't crash with "URL and API key are required" in pages that are
+        # missing `export const dynamic = 'force-dynamic'`.
+        # These are NEXT_PUBLIC_ (client-side) placeholders only — no secrets.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-ci-build
         run: npm run build
 
       - name: Check for secret leaks
