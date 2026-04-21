@@ -11,18 +11,33 @@ type Role = 'participant' | 'organiser'
 export default function RoleSelectionPage() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Get user directly from Supabase auth
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUserId(user.id)
-      } else {
-        toast.error('Please log in first.')
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          console.error('Auth error:', error)
+          toast.error('Authentication error. Please log in again.')
+          router.push('/login')
+          return
+        }
+        if (user) {
+          setUserId(user.id)
+        } else {
+          toast.error('Please log in first.')
+          router.push('/login')
+        }
+      } catch (err) {
+        console.error('Error getting user:', err)
+        toast.error('Error. Please log in again.')
         router.push('/login')
+      } finally {
+        setLoading(false)
       }
     }
     getUser()
@@ -67,6 +82,14 @@ export default function RoleSelectionPage() {
       console.error(error)
       setIsSubmitting(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    )
   }
 
   return (

@@ -9,9 +9,12 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      // Always redirect to role selection after successful auth
-      // User will select role and be redirected to appropriate dashboard
-      return NextResponse.redirect(`${origin}/auth/role`)
+      // Verify session is established
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        // Session established, redirect to role selection
+        return NextResponse.redirect(`${origin}/auth/role`)
+      }
     }
   }
 
