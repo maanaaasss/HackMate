@@ -51,7 +51,7 @@ function generateCertificateHTML(data: {
   certificateId: string
   issuedDate: string
 }): string {
-  const { participantName, college, teamName, hackathonName, certificateType, rank, certificateId, issuedDate } = data
+  const { participantName, college, teamName, hackathonName, certificateType, certificateId, issuedDate } = data
 
   let achievementText = 'Certificate of Participation'
   let badgeHTML = ''

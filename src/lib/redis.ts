@@ -16,7 +16,7 @@ export function getRedis(): Redis {
 
 // For backward compatibility - proxy all methods
 export const redis = new Proxy({} as Redis, {
-  get(_target, prop) {
-    return (getRedis() as any)[prop]
+  get(_target, prop: keyof Redis) {
+    return getRedis()[prop]
   },
 })
