@@ -194,30 +194,19 @@ RE_API_KEY (only if sending certificate emails)
 
 ## 7. Post-Deploy Verification
 
-### 7.1 Test Keep-Alive
-
-Visit: `https://your-app.vercel.app/api/keep-alive`
-
-Should return:
-```json
-{"status":"ok","timestamp":"...","service":"hackmate"}
-```
-
-### 7.2 Test Auth Flow
+### 7.1 Test Auth Flow
 
 1. Visit `https://your-app.vercel.app/login`
 2. Click "Sign in with GitHub"
 3. Authorize the app
-4. Should redirect to profile setup
+4. Should redirect to role selection
 
-### 7.3 Create First Organiser
+### 7.2 Create First Organiser
 
 1. Sign up with GitHub
-2. Complete profile setup
-3. Go to Supabase Dashboard > Table Editor > profiles
-4. Find your user row
-5. Change `role` from `participant` to `organiser`
-6. Refresh app - you should see organiser dashboard
+2. Select "Organise Hackathons" role
+3. Complete profile setup
+4. You should see organiser dashboard
 
 ## 8. First Hackathon
 

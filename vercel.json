@@ -1,10 +1,4 @@
 {
-  "crons": [
-    {
-      "path": "/api/keep-alive",
-      "schedule": "*/14 * * * *"
-    }
-  ],
   "functions": {
     "src/app/api/certificates/generate-all/route.ts": {
       "maxDuration": 300
