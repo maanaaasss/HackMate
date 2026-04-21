@@ -1,11 +1,8 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { useUser } from '@/stores/authStore'
 import { toast } from 'sonner'
 import { Loader2, Users, Trophy } from 'lucide-react'
 
@@ -13,12 +10,26 @@ type Role = 'participant' | 'organiser'
 
 export default function RoleSelectionPage() {
   const router = useRouter()
-  const user = useUser()
+  const [userId, setUserId] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Get user directly from Supabase auth
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+      } else {
+        toast.error('Please log in first.')
+        router.push('/login')
+      }
+    }
+    getUser()
+  }, [router])
+
   const handleSelectRole = async (role: Role) => {
-    if (!user) {
+    if (!userId) {
       toast.error('User not found. Please log in again.')
       router.push('/login')
       return
@@ -35,7 +46,7 @@ export default function RoleSelectionPage() {
           role: role,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id)
+        .eq('id', userId)
 
       if (error) throw error
 
