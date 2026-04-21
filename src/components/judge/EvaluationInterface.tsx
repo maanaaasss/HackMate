@@ -94,17 +94,13 @@ export default function EvaluationInterface({
   
   const [scores, setScores] = useState<Record<string, number>>(initialScores)
   const [notes, setNotes] = useState(existingScores.length > 0 && existingScores[0].notes ? existingScores[0].notes : '')
-  const [isSealed, setIsSealed] = useState(false)
   const [showSealDialog, setShowSealDialog] = useState(false)
 
-  // Check if scores are sealed (all items have scores and no changes)
-  useEffect(() => {
-    const allScored = rubricItems.every(item => {
-      const existingScore = existingScores.find(s => s.rubric_item_id === item.id)
-      return existingScore && existingScore.value > 0
-    })
-    setIsSealed(allScored && existingScores.length === rubricItems.length)
-  }, [rubricItems, existingScores])
+  // Compute if scores are sealed (all items have scores and no changes)
+  const isSealed = rubricItems.every(item => {
+    const existingScore = existingScores.find(s => s.rubric_item_id === item.id)
+    return existingScore && existingScore.value > 0
+  }) && existingScores.length === rubricItems.length
 
   // Fetch GitHub activity
   const { data: githubActivity, isLoading: githubLoading } = useQuery({
@@ -135,7 +131,6 @@ export default function EvaluationInterface({
     },
     onSuccess: () => {
       toast.success('Scores sealed successfully!')
-      setIsSealed(true)
       setShowSealDialog(false)
       queryClient.invalidateQueries({ queryKey: ['judge-dashboard'] })
     },

@@ -30,7 +30,6 @@ export default function LeaderboardView({
   initialData: LeaderboardData
   isPublic?: boolean
 }) {
-  const [lastUpdated, setLastUpdated] = useState(new Date())
   const [secondsAgo, setSecondsAgo] = useState(0)
   const [isRevealed, setIsRevealed] = useState(false)
   const [revealedData, setRevealedData] = useState<LeaderboardData | null>(null)
@@ -47,20 +46,19 @@ export default function LeaderboardView({
     refetchInterval: 30000,
   })
 
-  // Update lastUpdated when data changes
-  useEffect(() => {
-    if (data) {
-      setLastUpdated(new Date())
-    }
-  }, [data])
+  // Compute lastUpdated from data
+  const lastUpdated = data?.generated_at ? new Date(data.generated_at) : new Date()
 
   // Update seconds ago counter
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateSecondsAgo = () => {
       const now = new Date()
       const diff = Math.floor((now.getTime() - lastUpdated.getTime()) / 1000)
-      setSecondsAgo(diff)
-    }, 1000)
+      setSecondsAgo(Math.max(0, diff))
+    }
+
+    updateSecondsAgo()
+    const timer = setInterval(updateSecondsAgo, 1000)
 
     return () => clearInterval(timer)
   }, [lastUpdated])

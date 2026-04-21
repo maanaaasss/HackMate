@@ -31,55 +31,45 @@ export default function EventCountdown({ hackathon }: { hackathon: Hackathon }) 
   }
 
   const targetTime = getTargetTime()
-  const isExpiredInitial = !targetTime
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  })
-  const [isExpired, setIsExpired] = useState(isExpiredInitial)
+  const calculateTimeLeft = () => {
+    if (!targetTime) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true }
+    }
+
+    const now = new Date()
+    const difference = targetTime.getTime() - now.getTime()
+
+    if (difference <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true }
+    }
+
+    return {
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((difference / 1000 / 60) % 60),
+      seconds: Math.floor((difference / 1000) % 60),
+      isExpired: false,
+    }
+  }
+
+  const [timeLeftData, setTimeLeftData] = useState(calculateTimeLeft)
 
   useEffect(() => {
     if (!targetTime) {
       return
     }
 
-    const calculateTimeLeft = () => {
-      const now = new Date()
-      const difference = targetTime.getTime() - now.getTime()
-
-      if (difference <= 0) {
-        setIsExpired(true)
-        return {
-          days: 0,
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-        }
-      }
-
-      return {
-        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      }
-    }
-
-    // Initial calculation
-    const initialTimeLeft = calculateTimeLeft()
-    setTimeLeft(initialTimeLeft)
-
     // Update every second
     const timer = setInterval(() => {
-      const newTimeLeft = calculateTimeLeft()
-      setTimeLeft(newTimeLeft)
+      setTimeLeftData(calculateTimeLeft())
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [hackathon])
+  }, [targetTime])
+
+  const timeLeft = { days: timeLeftData.days, hours: timeLeftData.hours, minutes: timeLeftData.minutes, seconds: timeLeftData.seconds }
+  const isExpired = timeLeftData.isExpired
 
   const getTargetLabel = () => {
     switch (hackathon.status) {

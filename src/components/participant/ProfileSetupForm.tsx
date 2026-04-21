@@ -195,14 +195,10 @@ export default function ProfileSetupForm() {
 
     setIsSubmitting(true)
     try {
-      const profileData: any = {
+      const profileData = {
         ...data,
         updated_at: new Date().toISOString(),
-      }
-
-      // Include role if selected during onboarding
-      if (isOnboarding && selectedRole) {
-        profileData.role = selectedRole
+        ...(isOnboarding && selectedRole ? { role: selectedRole } : {}),
       }
 
       // Update profile (profile already exists, created by auth trigger)
