@@ -28,6 +28,25 @@ export default function RoleSelectionPage() {
         }
         if (user) {
           setUserId(user.id)
+          
+          // Check if user already has a role set
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile?.role && profile.role !== 'participant') {
+            // User already has a role, redirect to appropriate dashboard
+            const roleRedirects: Record<string, string> = {
+              organiser: '/organiser',
+              judge: '/judge',
+              mentor: '/mentor',
+              sponsor: '/sponsor',
+            }
+            router.push(roleRedirects[profile.role] || '/dashboard')
+            return
+          }
         } else {
           toast.error('Please log in first.')
           router.push('/login')
@@ -44,9 +63,7 @@ export default function RoleSelectionPage() {
   }, [router])
 
   const handleSelectRole = async (role: Role) => {
-    if (!userId) {
-      toast.error('User not found. Please log in again.')
-      router.push('/login')
+    if (!userId || isSubmitting) {
       return
     }
 

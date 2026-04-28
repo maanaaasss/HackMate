@@ -5,7 +5,14 @@ import OpportunityGallery from '@/components/participant/OpportunityGallery'
 import RecommendationFeed from '@/components/participant/RecommendationFeed'
 import { redirect } from 'next/navigation'
 
-export default async function BrowsePage() {
+interface BrowsePageProps {
+  searchParams: Promise<{
+    hackathon?: string
+  }>
+}
+
+export default async function BrowsePage({ searchParams }: BrowsePageProps) {
+  const { hackathon: hackathonId } = await searchParams
   const supabase = await createClient()
   
   // Get current user
@@ -14,14 +21,25 @@ export default async function BrowsePage() {
     redirect('/login')
   }
 
-  // Get active hackathon
-  const { data: hackathon } = await supabase
-    .from('hackathons')
-    .select('id, name, status, max_team_size')
-    .in('status', ['registration_open', 'ongoing'])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  // Get hackathon - either from URL param or the first available
+  let hackathon
+  if (hackathonId) {
+    const { data } = await supabase
+      .from('hackathons')
+      .select('id, name, status, max_team_size')
+      .eq('id', hackathonId)
+      .single()
+    hackathon = data
+  } else {
+    const { data } = await supabase
+      .from('hackathons')
+      .select('id, name, status, max_team_size')
+      .in('status', ['registration_open', 'ongoing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    hackathon = data
+  }
 
   if (!hackathon) {
     return (

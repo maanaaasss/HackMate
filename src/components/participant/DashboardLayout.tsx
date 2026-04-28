@@ -38,6 +38,11 @@ type Hackathon = {
   end_time?: string
   submission_deadline?: string
   registration_deadline?: string
+  venue?: string
+  description?: string
+  min_team_size: number
+  max_team_size: number
+  max_teams?: number
 }
 
 type Team = {
@@ -70,7 +75,7 @@ type TimelineEvent = {
 
 export default function DashboardLayout({
   user,
-  hackathon,
+  hackathons,
   currentTeam,
   announcements,
   teamsForRecommendations,
@@ -80,7 +85,7 @@ export default function DashboardLayout({
   feedbackSubmitted,
 }: {
   user: User
-  hackathon?: Hackathon
+  hackathons?: Hackathon[]
   currentTeam?: Team | null
   announcements: Announcement[]
   teamsForRecommendations: {
@@ -116,6 +121,7 @@ export default function DashboardLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Browse Hackathons', href: '/dashboard/hackathons', icon: Calendar },
     { name: 'My Team', href: '/team', icon: Users },
     { name: 'Submit', href: '/submit', icon: Upload },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
@@ -271,8 +277,8 @@ export default function DashboardLayout({
             )}
 
             {/* Event Countdown */}
-            {hackathon && (
-              <EventCountdown hackathon={hackathon} />
+            {hackathons && hackathons.length > 0 && (
+              <EventCountdown hackathon={hackathons[0]} />
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -295,13 +301,13 @@ export default function DashboardLayout({
                 {/* Team Status */}
                 <TeamStatusCard
                   currentTeam={currentTeam}
-                  hackathon={hackathon}
+                  hackathon={hackathons && hackathons.length > 0 ? hackathons[0] : undefined}
                 />
 
                 {/* Announcements */}
                 <AnnouncementsFeed
                   initialAnnouncements={announcements}
-                  hackathonId={hackathon?.id}
+                  hackathonId={hackathons && hackathons.length > 0 ? hackathons[0].id : undefined}
                 />
               </div>
             </div>
@@ -309,10 +315,10 @@ export default function DashboardLayout({
         </main>
 
         {/* Raise Hand Button (only during ongoing status) */}
-        {currentTeam && hackathon?.status === 'ongoing' && (
+        {currentTeam && hackathons && hackathons.length > 0 && hackathons[0]?.status === 'ongoing' && (
           <RaiseHandButton
             teamId={currentTeam.id}
-            hackathonId={hackathon.id}
+            hackathonId={hackathons[0].id}
             userId={user.id}
           />
         )}

@@ -42,9 +42,40 @@ export default function AuthCallbackContent() {
         .eq('id', session.user.id)
         .single()
 
+      // If profile doesn't exist, create one
+      if (profileError && profileError.code === 'PGRST116') {
+        // Create new profile
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session.user.id,
+            email: session.user.email || '',
+            full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            avatar_url: session.user.user_metadata?.avatar_url,
+            role: 'participant', // Default role
+          })
+        
+        if (createError) {
+          console.error('Error creating profile:', createError)
+          setError('Failed to create user profile')
+          return
+        }
+        
+        // Redirect to role selection for new users
+        router.push('/auth/role')
+        return
+      }
+
       if (profileError) {
         setError(profileError.message)
         router.push(`/login?error=${encodeURIComponent(profileError.message)}`)
+        return
+      }
+
+      // Check if user has explicitly selected a role (not just default)
+      // If the profile was just created or role was never explicitly set
+      if (!profile || !profile.role || profile.role === 'participant' && !profile.full_name) {
+        router.push('/auth/role')
         return
       }
 

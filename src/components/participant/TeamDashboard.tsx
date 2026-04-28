@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, UserMinus, MessageCircle, Plus, X, Check } from 'lucide-react'
+import { Loader2, UserMinus, MessageCircle, Plus, X, Check, UserPlus } from 'lucide-react'
 import AddGhostSlotModal from './AddGhostSlotModal'
+import InviteMemberModal from './InviteMemberModal'
 
 type TeamMember = {
   user_id: string
@@ -78,6 +79,7 @@ export default function TeamDashboard({
   const router = useRouter()
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>(initialJoinRequests)
   const [showAddSlotModal, setShowAddSlotModal] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
   const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [processingRequest, setProcessingRequest] = useState<string | null>(null)
 
@@ -233,8 +235,17 @@ export default function TeamDashboard({
           <div className="lg:col-span-2 space-y-8">
             {/* Members Section */}
             <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Team Members</h2>
+              <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-lg font-medium text-gray-900">Team Members ({members.length})</h2>
+                {isTeamLead && (
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    <UserPlus className="h-4 w-4 mr-1" />
+                    Invite Member
+                  </button>
+                )}
               </div>
               <div className="divide-y divide-gray-200">
                 {members.map((member) => (
@@ -500,6 +511,13 @@ export default function TeamDashboard({
           isOpen={showAddSlotModal}
           onClose={() => setShowAddSlotModal(false)}
           teamId={team.id}
+        />
+
+        <InviteMemberModal
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          teamId={team.id}
+          teamName={team.name}
         />
       </div>
     </div>

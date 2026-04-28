@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import TeamDashboard from '@/components/participant/TeamDashboard'
 import CreateOrJoinView from '@/components/participant/CreateOrJoinView'
+import InvitationsBanner from '@/components/participant/InvitationsBanner'
 import { redirect } from 'next/navigation'
 
 export default async function TeamPage() {
@@ -124,5 +125,12 @@ export default async function TeamPage() {
   }
 
   // User not in a team
-  return <CreateOrJoinView hackathon={hackathon} userId={user.id} />
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <InvitationsBanner />
+        <CreateOrJoinView hackathon={hackathon} userId={user.id} />
+      </div>
+    </div>
+  )
 }

@@ -178,7 +178,7 @@ export default function HackathonWizard() {
 
       const hackathon = await response.json()
       toast.success(`Hackathon ${status === 'draft' ? 'saved as draft' : 'published'}!`)
-      router.push(`/organiser/${hackathon.id}`)
+      router.push('/organiser')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create hackathon')
     } finally {

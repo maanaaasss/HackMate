@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import {
@@ -285,20 +286,41 @@ export default function CommandCenterDashboard({
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Command Center</h1>
-            <p className="text-gray-600">
-              {hackathon.name} — {hackathon.status.replace('_', ' ')}
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <Link
+              href="/organiser"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              All Hackathons
+            </Link>
           </div>
-          <button
-            onClick={() => queryClient.invalidateQueries()}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh All
-          </button>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Command Center</h1>
+              <p className="text-gray-600">
+                {hackathon.name} — {hackathon.status.replace('_', ' ')}
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <Link
+                href={`/organiser/${hackathon.id}/edit`}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Edit Hackathon
+              </Link>
+              <button
+                onClick={() => queryClient.invalidateQueries()}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh All
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
